@@ -43,8 +43,40 @@ sub eqarray  {
 }
 
 # Change this to your # of ok() calls + 1
-BEGIN { $Total_tests = 2 }
+BEGIN { $Total_tests = 7 }
 
 use AnyLoader;
+use FindBin qw($Bin);
+use lib ($Bin);
 
 ok( Text::Soundex::soundex('schwern') eq 'S650' );
+ok( Testing::AnyLoader::some_func() == 23 );
+ok( Testing::AnyLoader::some_other_func() == 42 );
+
+# Test to make sure DESTROY is not messed with.
+eval {
+    local $SIG{__WARN__} = sub { die @_ };
+
+    my $obj = bless [], "Foo";
+    undef $obj;
+};
+ok( !$@ );
+
+eval {
+    local $SIG{ALRM} = sub { die "SUPPLIES!\n" };
+    alarm(1);
+    Text::Soundex::fooble();
+};
+alarm(0);
+
+ok( $@ && $@ ne "SUPPLIES!\n" );
+
+
+eval {
+    local $SIG{ALRM} = sub { die "SUPPLIES!\n" };
+#    alarm(1);
+    Testing::AnyLoader::i_dont_exist();
+};
+alarm(0);
+
+ok( $@ && $@ ne "SUPPLIES!\n" );

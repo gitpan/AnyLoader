@@ -1,8 +1,9 @@
 package AnyLoader;
 
 use strict;
+use Class::ISA;
 use vars qw($VERSION %OkayToLoad %ModsToLoad %LoadAnything);
-$VERSION = '0.01';
+$VERSION = '0.04';
 
 
 $SIG{__WARN__} = sub {
@@ -50,7 +51,9 @@ sub unimport {
     # being called.
         my($caller) = caller;
         my($module, $func) = $AUTOLOAD =~ /(.*)::([^:]+)$/;
-        
+
+        return if $func eq 'DESTROY';
+
         # Check to see if we're allow to load this.
         # XXX This is *ALOT* more complicated than it has to be.
         unless( 
@@ -85,9 +88,16 @@ sub unimport {
             Carp::croak("Problem while AuyLoader was trying to use '$module' ".
                         "for '$func':  $@");
         }
-        
+
         # Go do it.
-        goto \&{$module.'::'.$func};
+        my $full_func = $module.'::'.$func;
+        if( defined &{$full_func} ) {
+            goto \&{$full_func};
+        }
+        else {
+            require Carp;
+            Carp::croak(sprintf "Undefined subroutine &%s called", $full_func);
+        }
     }
 }    
 
@@ -160,6 +170,9 @@ $SIG{__WARN__} had to be used to suppress a warning about the
 deprecated feature.
 
 Defines UNIVERSAL::AUTOLOAD which may interfere with other modules.
+
+Despite what you'd think, AnyLoader *will* work with modules which
+employ an autoloader.
 
 
 =head1 AUTHORS

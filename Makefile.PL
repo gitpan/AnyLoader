@@ -28,7 +28,9 @@ CHANGE_WARN
 WriteMakefile(
     NAME            => $PACKAGE,
     VERSION_FROM    => "lib/$PACKAGE_FILE.pm", # finds $VERSION
-    PREREQ_PM       => {   },
+    PREREQ_PM       => {   
+                        Class::ISA      => '0.31',
+                       },
     'dist'          => { COMPRESS   => 'gzip -9',
                          SUFFIX     => '.gz',
                          DIST_DEFAULT   => 'all tardist',
